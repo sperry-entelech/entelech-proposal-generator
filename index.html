@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upwork Cold Email Proposal Generator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+        :root {
+            --bg-primary: #000;
+            --bg-secondary: #0a0a0a;
+            --bg-tertiary: #111;
+            --border-color: #222;
+            --text-primary: #fff;
+            --text-secondary: #bbb;
+            --text-muted: #666;
+            --text-label: #999;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --error-bg: #1a0000;
+            --error-border: #330000;
+            --error-text: #ff6b6b;
+            --success-bg: #001a0a;
+            --success-border: #003300;
+            --success-text: #6bff6b;
+        }
+
+        .light-mode {
+            --bg-primary: #fff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #e5e5e5;
+            --border-color: #ddd;
+            --text-primary: #000;
+            --text-secondary: #333;
+            --text-muted: #666;
+            --text-label: #555;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 20px 40px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 200px 420px 1fr;
+            flex: 1;
+        }
+
+        /* Saved Jobs Sidebar */
+        .saved-jobs-sidebar {
+            padding: 20px;
+            border-right: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            overflow-y: auto;
+            max-height: calc(100vh - 61px);
+        }
+
+        .saved-jobs-sidebar h3 {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-label);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .saved-job-item {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .saved-job-item:hover {
+            border-color: var(--accent);
+        }
+
+        .saved-job-item.active {
+            border-color: var(--accent);
+            background: var(--bg-primary);
+        }
+
+        .saved-job-title {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .saved-job-meta {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .saved-job-status {
+            display: inline-block;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 6px;
+        }
+
+        .status-pending { background: #332200; color: #ffaa00; }
+        .status-sent { background: #003322; color: #00ffaa; }
+        .status-replied { background: #002233; color: #00aaff; }
+        .status-hired { background: #003300; color: #00ff00; }
+
+        /* Main Sidebar (Form) */
+        .sidebar {
+            padding: 24px;
+            border-right: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            overflow-y: auto;
+            max-height: calc(100vh - 61px);
+        }
+
+        .main {
+            padding: 24px 40px;
+            background: var(--bg-primary);
+            overflow-y: auto;
+            max-height: calc(100vh - 61px);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-label);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .label-hint {
+            font-weight: 400;
+            text-transform: none;
+            color: var(--text-muted);
+            font-size: 10px;
+            display: block;
+            margin-top: 2px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-primary);
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: var(--bg-primary);
+        }
+
+        input::placeholder, textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            line-height: 1.5;
+        }
+
+        textarea.large {
+            min-height: 160px;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Proof Points Selector */
+        .proof-points-container {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-tertiary);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .proof-point-category {
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-label);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+        }
+
+        .proof-point-item {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .proof-point-item:hover {
+            background: var(--bg-primary);
+        }
+
+        .proof-point-item.selected {
+            background: var(--bg-primary);
+            color: var(--accent);
+        }
+
+        .proof-point-item input[type="checkbox"] {
+            width: auto;
+            padding: 0;
+            margin: 0;
+            accent-color: var(--accent);
+        }
+
+        .proof-point-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            width: 400px;
+            z-index: 1000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .admin-panel h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .admin-panel .close-btn {
+            background: var(--bg-secondary);
+            padding: 10px 20px;
+            margin-top: 15px;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 999;
+        }
+
+        button {
+            padding: 14px 20px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: -0.2px;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background: var(--border-color);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--text-muted);
+        }
+
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 12px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        /* Output Sections */
+        .output-container {
+            display: none;
+        }
+
+        .output-container.visible {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .output-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 4px;
+        }
+
+        .output-tab {
+            padding: 10px 16px;
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            border-radius: 6px 6px 0 0;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .output-tab:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .output-tab.active {
+            color: var(--accent);
+            background: var(--bg-tertiary);
+        }
+
+        .output-panel {
+            display: none;
+        }
+
+        .output-panel.active {
+            display: block;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .output-title {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .char-count.warning {
+            color: #ffaa00;
+        }
+
+        .char-count.over {
+            color: var(--error-text);
+        }
+
+        /* Preview Box */
+        .preview-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .preview-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-label);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .preview-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        .preview-text::after {
+            content: '...';
+            color: var(--text-muted);
+        }
+
+        /* Output Content */
+        .output-content {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .output-content h3 {
+            color: var(--text-primary);
+            font-size: 15px;
+            font-weight: 600;
+            margin: 16px 0 8px 0;
+        }
+
+        .output-content h3:first-child {
+            margin-top: 0;
+        }
+
+        .copy-feedback {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success-bg);
+            border: 1px solid var(--success-border);
+            color: var(--success-text);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .copy-feedback.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Loading & Error States */
+        .loading {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .error {
+            background: var(--error-bg);
+            border: 1px solid var(--error-border);
+            color: var(--error-text);
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 400px;
+            color: var(--text-muted);
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        /* Analytics Panel */
+        .analytics-panel {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .analytics-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-label);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .analytics-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .analytics-stat {
+            text-align: center;
+        }
+
+        .analytics-stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .analytics-stat-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; color: #000; }
+            .saved-jobs-sidebar, .sidebar, .header { display: none; }
+            .content { grid-template-columns: 1fr; }
+            .main { padding: 40px; max-height: none; }
+            .output-content { color: #000; border: none; background: transparent; }
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .content { grid-template-columns: 380px 1fr; }
+            .saved-jobs-sidebar { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .content { grid-template-columns: 1fr; }
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                max-height: none;
+            }
+            .main { max-height: none; }
+            .header { padding: 16px 20px; }
+            .sidebar, .main { padding: 20px; }
+            .form-row { grid-template-columns: 1fr; }
+            .analytics-stats { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* Section Divider */
+        .section-divider {
+            margin: 24px 0 20px 0;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Upwork Cold Email Proposal Generator</h1>
+            <div class="header-controls">
+                <button class="theme-toggle btn-small btn-secondary" onclick="toggleTheme()">Toggle Theme</button>
+                <button class="btn-small btn-secondary" onclick="openAdminPanel()">API Key</button>
+            </div>
+        </div>
+        <div class="content">
+            <!-- Saved Jobs Sidebar -->
+            <div class="saved-jobs-sidebar">
+                <h3>Saved Jobs</h3>
+                <div id="savedJobsList">
+                    <div class="empty-state" style="min-height: 100px; font-size: 12px;">
+                        No saved jobs yet
+                    </div>
+                </div>
+                <button class="btn-small btn-secondary btn-full" style="margin-top: 12px;" onclick="clearSavedJobs()">Clear All</button>
+            </div>
+
+            <!-- Main Form Sidebar -->
+            <div class="sidebar">
+                <div class="form-group hidden" id="apiKeyGroup">
+                    <label>API Key</label>
+                    <input type="password" id="apiKey" placeholder="sk-ant-..." />
+                </div>
+
+                <!-- Template Selection -->
+                <div class="form-group">
+                    <label>
+                        Template Type
+                        <span class="label-hint">Select the client type to customize the proposal structure</span>
+                    </label>
+                    <select id="template" onchange="updateTemplateInfo()">
+                        <option value="agency_cold_email">Agency Cold Email Service</option>
+                        <option value="b2b_saas_outbound">B2B SaaS Outbound</option>
+                        <option value="coach_consultant_outbound">Coach/Consultant Outbound</option>
+                        <option value="lead_gen_infrastructure">Lead Gen Infrastructure</option>
+                    </select>
+                </div>
+
+                <div id="templateInfo" class="form-group" style="margin-top: -12px; margin-bottom: 20px;">
+                    <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5;"></p>
+                </div>
+
+                <!-- Job Description -->
+                <div class="form-group">
+                    <label>
+                        Job Description
+                        <span class="label-hint">Paste the full Upwork job posting</span>
+                    </label>
+                    <textarea id="jobDescription" class="large" placeholder="Paste the full Upwork job description here..."></textarea>
+                </div>
+
+                <!-- Client Research -->
+                <div class="form-group">
+                    <label>
+                        Client Research (Optional)
+                        <span class="label-hint">LinkedIn, website, past reviews, etc.</span>
+                    </label>
+                    <textarea id="clientResearch" placeholder="Any info about the client that could help personalize the proposal..."></textarea>
+                </div>
+
+                <div class="section-divider">
+                    <div class="section-title">Proof Points</div>
+                </div>
+
+                <!-- Proof Points Selector -->
+                <div class="form-group">
+                    <label>
+                        Select Relevant Proof Points
+                        <span class="label-hint">Click to include in proposal</span>
+                    </label>
+                    <div class="proof-points-container" id="proofPointsContainer">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Custom Proof Points -->
+                <div class="form-group">
+                    <label>
+                        Additional Proof Points
+                        <span class="label-hint">Add any custom results or examples</span>
+                    </label>
+                    <textarea id="customProofPoints" placeholder="Add any additional proof points specific to this proposal..."></textarea>
+                </div>
+
+                <div class="section-divider">
+                    <div class="section-title">Positioning & Output</div>
+                </div>
+
+                <!-- Positioning Style -->
+                <div class="form-group">
+                    <label>Opening Style</label>
+                    <select id="positioningStyle">
+                        <option value="results_first">Results-First (lead with numbers)</option>
+                        <option value="consultative">Consultative (lead with insight)</option>
+                        <option value="problem_aware">Problem-Aware (lead with pain point)</option>
+                    </select>
+                </div>
+
+                <!-- Risk Reversal -->
+                <div class="form-group">
+                    <label>Risk Reversal / Guarantee</label>
+                    <select id="riskReversal">
+                        <option value="meetings_guarantee">Meetings Guarantee (X meetings or refund)</option>
+                        <option value="reply_rate_guarantee">Reply Rate Guarantee (X% or continue free)</option>
+                        <option value="satisfaction_guarantee">Satisfaction Guarantee (not happy = refund)</option>
+                        <option value="no_guarantee">No Explicit Guarantee</option>
+                    </select>
+                </div>
+
+                <!-- Output Format -->
+                <div class="form-group">
+                    <label>Output Format</label>
+                    <select id="outputFormat">
+                        <option value="cover_letter">Cover Letter Only</option>
+                        <option value="full_proposal">Full Proposal</option>
+                        <option value="loom_script">Loom Video Script</option>
+                        <option value="all">All Three</option>
+                    </select>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-full" id="generateBtn" onclick="generateProposal()">Generate Proposal</button>
+                </div>
+                <div class="btn-group">
+                    <button class="btn-secondary btn-full" onclick="saveCurrentJob()">Save Job</button>
+                </div>
+            </div>
+
+            <!-- Main Output Area -->
+            <div class="main">
+                <div id="loading" class="loading" style="display:none;">
+                    <div class="spinner"></div>
+                    <p>Generating proposal...</p>
+                </div>
+                <div id="error" class="error" style="display:none;"></div>
+                <div id="empty" class="empty-state">
+                    <div class="empty-state-icon">✉️</div>
+                    <p>Configure your proposal settings and click Generate</p>
+                    <p style="margin-top: 8px; font-size: 12px; color: var(--text-muted);">
+                        Press Ctrl+Shift+K to set your API key
+                    </p>
+                </div>
+
+                <div id="outputContainer" class="output-container">
+                    <div class="output-tabs">
+                        <button class="output-tab active" data-tab="coverLetter" onclick="switchTab('coverLetter')">Cover Letter</button>
+                        <button class="output-tab" data-tab="fullProposal" onclick="switchTab('fullProposal')">Full Proposal</button>
+                        <button class="output-tab" data-tab="loomScript" onclick="switchTab('loomScript')">Loom Script</button>
+                    </div>
+
+                    <!-- Cover Letter Panel -->
+                    <div id="coverLetterPanel" class="output-panel active">
+                        <div class="output-header">
+                            <span class="output-title">Cover Letter</span>
+                            <span class="char-count" id="coverLetterCharCount">0 characters</span>
+                        </div>
+                        <div class="preview-box">
+                            <div class="preview-label">Upwork Preview (First 120 characters)</div>
+                            <div class="preview-text" id="coverLetterPreview"></div>
+                        </div>
+                        <div class="output-content" id="coverLetterOutput"></div>
+                        <div class="btn-group">
+                            <button class="btn-secondary" onclick="copyToClipboard('coverLetterOutput')">Copy to Clipboard</button>
+                            <button class="btn-secondary" onclick="window.print()">Export PDF</button>
+                        </div>
+                    </div>
+
+                    <!-- Full Proposal Panel -->
+                    <div id="fullProposalPanel" class="output-panel">
+                        <div class="output-header">
+                            <span class="output-title">Full Proposal</span>
+                            <span class="char-count" id="fullProposalCharCount">0 characters</span>
+                        </div>
+                        <div class="output-content" id="fullProposalOutput"></div>
+                        <div class="btn-group">
+                            <button class="btn-secondary" onclick="copyToClipboard('fullProposalOutput')">Copy to Clipboard</button>
+                            <button class="btn-secondary" onclick="window.print()">Export PDF</button>
+                        </div>
+                    </div>
+
+                    <!-- Loom Script Panel -->
+                    <div id="loomScriptPanel" class="output-panel">
+                        <div class="output-header">
+                            <span class="output-title">Loom Video Script</span>
+                            <span class="char-count" id="loomScriptCharCount">~0 min read time</span>
+                        </div>
+                        <div class="output-content" id="loomScriptOutput"></div>
+                        <div class="btn-group">
+                            <button class="btn-secondary" onclick="copyToClipboard('loomScriptOutput')">Copy to Clipboard</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Panel -->
+                <div class="analytics-panel" id="analyticsPanel" style="display: none;">
+                    <div class="analytics-title">Proposal Analytics</div>
+                    <div class="analytics-stats">
+                        <div class="analytics-stat">
+                            <div class="analytics-stat-value" id="statTotal">0</div>
+                            <div class="analytics-stat-label">Total Sent</div>
+                        </div>
+                        <div class="analytics-stat">
+                            <div class="analytics-stat-value" id="statViewed">0%</div>
+                            <div class="analytics-stat-label">View Rate</div>
+                        </div>
+                        <div class="analytics-stat">
+                            <div class="analytics-stat-value" id="statReplied">0%</div>
+                            <div class="analytics-stat-label">Reply Rate</div>
+                        </div>
+                        <div class="analytics-stat">
+                            <div class="analytics-stat-value" id="statHired">0%</div>
+                            <div class="analytics-stat-label">Hire Rate</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Copy Feedback -->
+    <div id="copyFeedback" class="copy-feedback">Copied to clipboard!</div>
+
+    <!-- Hidden Admin Panel -->
+    <div id="adminOverlay" class="overlay hidden"></div>
+    <div id="adminPanel" class="admin-panel hidden">
+        <h3>API Settings</h3>
+        <div class="form-group">
+            <label>Anthropic API Key</label>
+            <input type="password" id="adminApiKey" placeholder="sk-ant-..." />
+        </div>
+        <button onclick="saveAdminKey()">Save Key</button>
+        <button class="btn-secondary close-btn" onclick="closeAdminPanel()">Close</button>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+
+        const STORED_API_KEY = 'upwork_proposal_api_key';
+        const STORED_JOBS = 'upwork_saved_jobs';
+        const STORED_ANALYTICS = 'upwork_proposal_analytics';
+        const STORED_THEME = 'upwork_proposal_theme';
+
+        const templates = {
+            agency_cold_email: {
+                name: "Agency Cold Email Service",
+                description: "For agencies wanting to add cold email as a service line",
+                sections: ['Hook', 'Partnership Credibility', 'Situation Analysis', 'Proposed Approach', 'Risk Reversal', 'CTA'],
+                targetAudience: "Marketing agencies, lead gen agencies, growth agencies"
+            },
+            b2b_saas_outbound: {
+                name: "B2B SaaS Outbound",
+                description: "For SaaS companies building outbound sales motion",
+                sections: ['Hook', 'Partnership Credibility', 'Technical Understanding', 'Proposed Approach', 'Risk Reversal', 'CTA'],
+                targetAudience: "SaaS founders, sales leaders, growth teams"
+            },
+            coach_consultant_outbound: {
+                name: "Coach/Consultant Outbound",
+                description: "For high-ticket service providers needing client acquisition",
+                sections: ['Hook', 'Partnership Credibility', 'Offer Analysis', 'Proposed Approach', 'Risk Reversal', 'CTA'],
+                targetAudience: "Coaches, consultants, info marketers, course creators"
+            },
+            lead_gen_infrastructure: {
+                name: "Lead Gen Infrastructure",
+                description: "For businesses needing complete outbound system build",
+                sections: ['Hook', 'Partnership Credibility', 'Infrastructure Scope', 'Proposed Approach', 'Risk Reversal', 'CTA'],
+                targetAudience: "Any B2B company building cold outreach capability"
+            }
+        };
+
+        const proofPointsLibrary = {
+            reply_rates: {
+                label: "Reply Rates",
+                items: [
+                    "11.5% reply rate for School community owners campaign",
+                    "2% positive reply rate generating 6 meetings in 48 hours",
+                    "100% positive reply rate for website agency outreach",
+                    "8-12% average reply rates across B2B campaigns"
+                ]
+            },
+            infrastructure_scale: {
+                label: "Infrastructure Scale",
+                items: [
+                    "53 email accounts, 1,590 daily sending capacity",
+                    "Built systems handling 4,770 new leads weekly",
+                    "Multi-domain setup with 15+ warmed domains",
+                    "Managed 50,000+ cold emails/month with 95%+ deliverability"
+                ]
+            },
+            niche_experience: {
+                label: "Niche Experience",
+                items: [
+                    "Website agencies: 100% positive reply rate",
+                    "SaaS companies: Technical product cold email specialization",
+                    "Coaches/consultants: High-ticket offer positioning",
+                    "Lead gen agencies: White-label infrastructure builds"
+                ]
+            },
+            technical_capabilities: {
+                label: "Technical Capabilities",
+                items: [
+                    "Full DNS configuration (SPF, DKIM, DMARC)",
+                    "Instantly, Smartlead, and custom tool expertise",
+                    "Apollo, Sales Navigator, and LinkedIn scraping",
+                    "Email warmup and deliverability optimization"
+                ]
+            }
+        };
+
+        const systemPrompt = `You are an expert Upwork proposal writer specializing in cold email infrastructure builds. You write proposals that:
+
+1. OPEN STRONG: First 100-120 characters are critical for Upwork preview. Lead with results, insight, or pattern-breaking statement.
+
+2. SOUND HUMAN: No corporate speak, no "I hope this message finds you well", no generic pleasantries. Write like a peer reaching out to help.
+
+3. DEMONSTRATE UNDERSTANDING: Show you understand their REAL problem, not just what they asked for. The best proposals reveal an insight they didn't consider.
+
+4. POSITION THE PARTNERSHIP: This is a partnership between strategy/sales (Sperry) and technical execution (DarkZ). Frame this as "enterprise-grade execution at freelancer prices."
+
+5. INCLUDE RISK REVERSAL: Every proposal needs a guarantee or risk reversal. Make it specific and believable.
+
+6. END WITH LOW-FRICTION CTA: Don't ask them to book a call immediately. Ask for a thumbs up, a quick reply, or offer to send more details.
+
+FRAMEWORKS TO USE:
+
+Opening Line Styles:
+- Results-First: "Built cold email system generating [X]% reply rates for [niche] clients. Here's how I'd approach your outbound..."
+- Consultative: "Most cold email 'experts' hand you templates. I build infrastructure that actually converts. Looking at your requirements..."
+- Problem-Aware: "If your last cold email campaign died in spam, I understand. Here's how we build for deliverability first..."
+
+Proposal Structure:
+1. Hook (2-3 sentences) - Pattern-breaking opener + specific observation from their job post
+2. Partnership Credibility (2-3 sentences) - Brief mention of partnership model + relevant proof
+3. Situation Analysis (3-4 sentences) - Demonstrate understanding of their real problem
+4. Proposed Approach (bullet points) - Clear deliverables and timeline
+5. Risk Reversal (1-2 sentences) - Specific guarantee
+6. CTA (1-2 sentences) - Low-friction next step
+
+AVOID:
+- Generic openers ("I'm excited to apply...")
+- Listing features without benefits
+- Sounding desperate or salesy
+- Promising things you can't deliver
+- Wall of text with no structure
+- Corporate jargon or buzzwords
+
+CHARACTER LIMITS:
+- Cover Letter: 500-800 characters for preview optimization, full letter under 2000 characters
+- Loom Script: 2-3 minutes when read aloud (roughly 300-400 words)`;
+
+        // ============================================
+        // STATE
+        // ============================================
+
+        let selectedProofPoints = [];
+        let currentOutputs = {
+            coverLetter: '',
+            fullProposal: '',
+            loomScript: ''
+        };
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadApiKey();
+            loadTheme();
+            updateTemplateInfo();
+            renderProofPoints();
+            renderSavedJobs();
+            updateAnalytics();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+                e.preventDefault();
+                openAdminPanel();
+            }
+        });
+
+        // ============================================
+        // API KEY MANAGEMENT
+        // ============================================
+
+        function loadApiKey() {
+            const storedKey = localStorage.getItem(STORED_API_KEY);
+            if (storedKey) {
+                document.getElementById('apiKey').value = storedKey;
+            }
+        }
+
+        function openAdminPanel() {
+            const currentKey = localStorage.getItem(STORED_API_KEY) || '';
+            document.getElementById('adminApiKey').value = currentKey;
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('adminOverlay').classList.remove('hidden');
+        }
+
+        function closeAdminPanel() {
+            document.getElementById('adminPanel').classList.add('hidden');
+            document.getElementById('adminOverlay').classList.add('hidden');
+        }
+
+        function saveAdminKey() {
+            const newKey = document.getElementById('adminApiKey').value.trim();
+            if (newKey) {
+                localStorage.setItem(STORED_API_KEY, newKey);
+                document.getElementById('apiKey').value = newKey;
+                alert('API key saved successfully!');
+                closeAdminPanel();
+            }
+        }
+
+        // ============================================
+        // THEME MANAGEMENT
+        // ============================================
+
+        function loadTheme() {
+            const theme = localStorage.getItem(STORED_THEME);
+            if (theme === 'light') {
+                document.body.classList.add('light-mode');
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const isLight = document.body.classList.contains('light-mode');
+            localStorage.setItem(STORED_THEME, isLight ? 'light' : 'dark');
+        }
+
+        // ============================================
+        // TEMPLATE INFO
+        // ============================================
+
+        function updateTemplateInfo() {
+            const template = document.getElementById('template').value;
+            const info = templates[template];
+            document.getElementById('templateInfo').querySelector('p').textContent =
+                `${info.description}. Target: ${info.targetAudience}`;
+        }
+
+        // ============================================
+        // PROOF POINTS
+        // ============================================
+
+        function renderProofPoints() {
+            const container = document.getElementById('proofPointsContainer');
+            let html = '';
+
+            for (const [category, data] of Object.entries(proofPointsLibrary)) {
+                html += `<div class="proof-point-category">${data.label}</div>`;
+                data.items.forEach((item, index) => {
+                    const id = `${category}_${index}`;
+                    const isSelected = selectedProofPoints.includes(item);
+                    html += `
+                        <div class="proof-point-item ${isSelected ? 'selected' : ''}" onclick="toggleProofPoint('${id}', this)">
+                            <input type="checkbox" ${isSelected ? 'checked' : ''} />
+                            <span>${item}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+
+        function toggleProofPoint(id, element) {
+            const [category, index] = id.split('_');
+            const item = proofPointsLibrary[category].items[parseInt(index)];
+            const checkbox = element.querySelector('input[type="checkbox"]');
+
+            if (selectedProofPoints.includes(item)) {
+                selectedProofPoints = selectedProofPoints.filter(p => p !== item);
+                element.classList.remove('selected');
+                checkbox.checked = false;
+            } else {
+                selectedProofPoints.push(item);
+                element.classList.add('selected');
+                checkbox.checked = true;
+            }
+        }
+
+        // ============================================
+        // SAVED JOBS
+        // ============================================
+
+        function getSavedJobs() {
+            return JSON.parse(localStorage.getItem(STORED_JOBS) || '[]');
+        }
+
+        function saveCurrentJob() {
+            const jobDescription = document.getElementById('jobDescription').value.trim();
+            if (!jobDescription) {
+                showError('Please enter a job description first');
+                return;
+            }
+
+            const jobs = getSavedJobs();
+            const title = jobDescription.substring(0, 50) + (jobDescription.length > 50 ? '...' : '');
+
+            jobs.unshift({
+                id: Date.now(),
+                title: title,
+                jobDescription: jobDescription,
+                clientResearch: document.getElementById('clientResearch').value,
+                template: document.getElementById('template').value,
+                positioningStyle: document.getElementById('positioningStyle').value,
+                riskReversal: document.getElementById('riskReversal').value,
+                outputFormat: document.getElementById('outputFormat').value,
+                selectedProofPoints: [...selectedProofPoints],
+                customProofPoints: document.getElementById('customProofPoints').value,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            });
+
+            localStorage.setItem(STORED_JOBS, JSON.stringify(jobs));
+            renderSavedJobs();
+            showCopyFeedback('Job saved!');
+        }
+
+        function loadJob(jobId) {
+            const jobs = getSavedJobs();
+            const job = jobs.find(j => j.id === jobId);
+            if (!job) return;
+
+            document.getElementById('jobDescription').value = job.jobDescription || '';
+            document.getElementById('clientResearch').value = job.clientResearch || '';
+            document.getElementById('template').value = job.template || 'agency_cold_email';
+            document.getElementById('positioningStyle').value = job.positioningStyle || 'results_first';
+            document.getElementById('riskReversal').value = job.riskReversal || 'meetings_guarantee';
+            document.getElementById('outputFormat').value = job.outputFormat || 'cover_letter';
+            document.getElementById('customProofPoints').value = job.customProofPoints || '';
+
+            selectedProofPoints = job.selectedProofPoints || [];
+            renderProofPoints();
+            updateTemplateInfo();
+
+            // Update active state in sidebar
+            document.querySelectorAll('.saved-job-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-job-id="${jobId}"]`)?.classList.add('active');
+        }
+
+        function updateJobStatus(jobId, status) {
+            const jobs = getSavedJobs();
+            const job = jobs.find(j => j.id === jobId);
+            if (job) {
+                job.status = status;
+                localStorage.setItem(STORED_JOBS, JSON.stringify(jobs));
+                renderSavedJobs();
+            }
+        }
+
+        function deleteJob(jobId, e) {
+            e.stopPropagation();
+            const jobs = getSavedJobs().filter(j => j.id !== jobId);
+            localStorage.setItem(STORED_JOBS, JSON.stringify(jobs));
+            renderSavedJobs();
+        }
+
+        function clearSavedJobs() {
+            if (confirm('Are you sure you want to clear all saved jobs?')) {
+                localStorage.setItem(STORED_JOBS, '[]');
+                renderSavedJobs();
+            }
+        }
+
+        function renderSavedJobs() {
+            const container = document.getElementById('savedJobsList');
+            const jobs = getSavedJobs();
+
+            if (jobs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="min-height: 100px; font-size: 12px;">
+                        No saved jobs yet
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            jobs.forEach(job => {
+                const date = new Date(job.createdAt).toLocaleDateString();
+                html += `
+                    <div class="saved-job-item" data-job-id="${job.id}" onclick="loadJob(${job.id})">
+                        <div class="saved-job-title">${job.title}</div>
+                        <div class="saved-job-meta">${date}</div>
+                        <span class="saved-job-status status-${job.status}">${job.status}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // PROPOSAL GENERATION
+        // ============================================
+
+        async function generateProposal() {
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const template = document.getElementById('template').value;
+            const jobDescription = document.getElementById('jobDescription').value.trim();
+            const clientResearch = document.getElementById('clientResearch').value.trim();
+            const positioningStyle = document.getElementById('positioningStyle').value;
+            const riskReversal = document.getElementById('riskReversal').value;
+            const outputFormat = document.getElementById('outputFormat').value;
+            const customProofPoints = document.getElementById('customProofPoints').value.trim();
+
+            const errorDiv = document.getElementById('error');
+            const emptyState = document.getElementById('empty');
+            errorDiv.style.display = 'none';
+
+            if (!apiKey) {
+                showError('Please set your API key (Ctrl+Shift+K)');
+                return;
+            }
+
+            if (!jobDescription) {
+                showError('Job description is required');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const outputContainer = document.getElementById('outputContainer');
+            const generateBtn = document.getElementById('generateBtn');
+
+            loading.style.display = 'block';
+            emptyState.style.display = 'none';
+            outputContainer.classList.remove('visible');
+            generateBtn.disabled = true;
+
+            // Build proof points string
+            let proofPointsText = '';
+            if (selectedProofPoints.length > 0) {
+                proofPointsText = 'Selected proof points:\n' + selectedProofPoints.map(p => `- ${p}`).join('\n');
+            }
+            if (customProofPoints) {
+                proofPointsText += '\n\nAdditional proof points:\n' + customProofPoints;
+            }
+
+            const templateInfo = templates[template];
+            const prompt = buildPrompt(jobDescription, clientResearch, templateInfo, positioningStyle, riskReversal, outputFormat, proofPointsText);
+
+            try {
+                const response = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01',
+                        'anthropic-dangerous-direct-browser-access': 'true'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-sonnet-4-20250514',
+                        max_tokens: 4096,
+                        system: systemPrompt,
+                        messages: [{
+                            role: 'user',
+                            content: prompt
+                        }]
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error?.message || 'API request failed');
+                }
+
+                const data = await response.json();
+                const content = data.content[0].text;
+
+                parseAndDisplayOutput(content, outputFormat);
+                logProposal(template, positioningStyle, riskReversal);
+
+            } catch (error) {
+                showError(error.message);
+                emptyState.style.display = 'flex';
+            } finally {
+                loading.style.display = 'none';
+                generateBtn.disabled = false;
+            }
+        }
+
+        function buildPrompt(jobDescription, clientResearch, templateInfo, positioningStyle, riskReversal, outputFormat, proofPointsText) {
+            const positioningInstructions = {
+                results_first: 'Lead with specific numbers and results. Open with a metric or achievement.',
+                consultative: 'Lead with an insight or observation about their situation. Show you understand something they might not have considered.',
+                problem_aware: 'Lead with the pain point they\'re likely experiencing. Show empathy for their frustration.'
+            };
+
+            const riskReversalInstructions = {
+                meetings_guarantee: 'Include a meetings guarantee: "If we don\'t book X qualified meetings in 30 days, you get a full refund."',
+                reply_rate_guarantee: 'Include a reply rate guarantee: "If we don\'t hit X% positive reply rate, I\'ll continue optimizing for free until we do."',
+                satisfaction_guarantee: 'Include a satisfaction guarantee: "Not happy with the results? Full refund, no questions asked."',
+                no_guarantee: 'Don\'t include an explicit guarantee, but still minimize perceived risk.'
+            };
+
+            const outputInstructions = {
+                cover_letter: 'Generate ONLY a cover letter optimized for Upwork. Keep it under 2000 characters. First 120 characters are critical for the preview.',
+                full_proposal: 'Generate a full proposal with all sections. This is for follow-up after initial interest.',
+                loom_script: 'Generate ONLY a Loom video script (2-3 minutes when read aloud, ~300-400 words). Write it conversationally, with [PAUSE] markers and screen share instructions.',
+                all: `Generate all three formats, clearly labeled:
+
+[COVER LETTER]
+(Under 2000 characters, optimized for Upwork submission)
+
+[FULL PROPOSAL]
+(Complete proposal with all sections)
+
+[LOOM SCRIPT]
+(2-3 minute video script with speaking notes)`
+            };
+
+            return `UPWORK JOB POSTING:
+${jobDescription}
+
+${clientResearch ? `CLIENT RESEARCH:\n${clientResearch}\n` : ''}
+TEMPLATE TYPE: ${templateInfo.name}
+Target Audience: ${templateInfo.targetAudience}
+Sections to include: ${templateInfo.sections.join(', ')}
+
+POSITIONING STYLE: ${positioningInstructions[positioningStyle]}
+
+RISK REVERSAL: ${riskReversalInstructions[riskReversal]}
+
+${proofPointsText ? `PROOF POINTS TO INCORPORATE:\n${proofPointsText}\n` : ''}
+OUTPUT FORMAT: ${outputInstructions[outputFormat]}
+
+PARTNERSHIP CONTEXT:
+- This is a partnership between Sperry (strategy, sales, client management) and DarkZ (technical execution, infrastructure build)
+- Position this as "enterprise-grade execution at freelancer prices"
+- The client gets the best of both worlds: strategic thinking AND technical excellence
+
+Generate the proposal now. Be specific, be human, be compelling. No fluff.`;
+        }
+
+        function parseAndDisplayOutput(content, outputFormat) {
+            const outputContainer = document.getElementById('outputContainer');
+
+            if (outputFormat === 'all') {
+                // Parse multiple sections
+                const coverLetterMatch = content.match(/\[COVER LETTER\]([\s\S]*?)(?=\[FULL PROPOSAL\]|$)/i);
+                const fullProposalMatch = content.match(/\[FULL PROPOSAL\]([\s\S]*?)(?=\[LOOM SCRIPT\]|$)/i);
+                const loomScriptMatch = content.match(/\[LOOM SCRIPT\]([\s\S]*?)$/i);
+
+                currentOutputs.coverLetter = coverLetterMatch ? coverLetterMatch[1].trim() : '';
+                currentOutputs.fullProposal = fullProposalMatch ? fullProposalMatch[1].trim() : '';
+                currentOutputs.loomScript = loomScriptMatch ? loomScriptMatch[1].trim() : '';
+            } else {
+                // Single output
+                currentOutputs.coverLetter = outputFormat === 'cover_letter' ? content : '';
+                currentOutputs.fullProposal = outputFormat === 'full_proposal' ? content : '';
+                currentOutputs.loomScript = outputFormat === 'loom_script' ? content : '';
+            }
+
+            // Update UI
+            document.getElementById('coverLetterOutput').textContent = currentOutputs.coverLetter;
+            document.getElementById('fullProposalOutput').textContent = currentOutputs.fullProposal;
+            document.getElementById('loomScriptOutput').textContent = currentOutputs.loomScript;
+
+            updateCharCounts();
+            updatePreview();
+
+            // Show appropriate tab
+            if (outputFormat === 'cover_letter' || outputFormat === 'all') {
+                switchTab('coverLetter');
+            } else if (outputFormat === 'full_proposal') {
+                switchTab('fullProposal');
+            } else if (outputFormat === 'loom_script') {
+                switchTab('loomScript');
+            }
+
+            outputContainer.classList.add('visible');
+        }
+
+        function updateCharCounts() {
+            const coverLetterCount = currentOutputs.coverLetter.length;
+            const fullProposalCount = currentOutputs.fullProposal.length;
+            const loomScriptWords = currentOutputs.loomScript.split(/\s+/).filter(w => w).length;
+            const loomScriptMinutes = Math.round(loomScriptWords / 150 * 10) / 10; // ~150 words per minute
+
+            const coverLetterEl = document.getElementById('coverLetterCharCount');
+            coverLetterEl.textContent = `${coverLetterCount} characters`;
+            coverLetterEl.className = 'char-count';
+            if (coverLetterCount > 2000) {
+                coverLetterEl.classList.add('over');
+            } else if (coverLetterCount > 1800) {
+                coverLetterEl.classList.add('warning');
+            }
+
+            document.getElementById('fullProposalCharCount').textContent = `${fullProposalCount} characters`;
+            document.getElementById('loomScriptCharCount').textContent = `~${loomScriptMinutes} min read time (${loomScriptWords} words)`;
+        }
+
+        function updatePreview() {
+            const preview = currentOutputs.coverLetter.substring(0, 120);
+            document.getElementById('coverLetterPreview').textContent = preview;
+        }
+
+        // ============================================
+        // TAB SWITCHING
+        // ============================================
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.output-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+            document.querySelectorAll('.output-panel').forEach(panel => {
+                panel.classList.toggle('active', panel.id === `${tabName}Panel`);
+            });
+        }
+
+        // ============================================
+        // CLIPBOARD
+        // ============================================
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showCopyFeedback('Copied to clipboard!');
+            });
+        }
+
+        function showCopyFeedback(message) {
+            const feedback = document.getElementById('copyFeedback');
+            feedback.textContent = message;
+            feedback.classList.add('visible');
+            setTimeout(() => {
+                feedback.classList.remove('visible');
+            }, 2000);
+        }
+
+        // ============================================
+        // ANALYTICS
+        // ============================================
+
+        function getAnalytics() {
+            return JSON.parse(localStorage.getItem(STORED_ANALYTICS) || '{"proposals": [], "outcomes": {}}');
+        }
+
+        function logProposal(template, positioningStyle, riskReversal) {
+            const analytics = getAnalytics();
+            analytics.proposals.push({
+                id: Date.now(),
+                template,
+                positioningStyle,
+                riskReversal,
+                createdAt: new Date().toISOString(),
+                outcome: null
+            });
+            localStorage.setItem(STORED_ANALYTICS, JSON.stringify(analytics));
+            updateAnalytics();
+        }
+
+        function logOutcome(proposalId, outcome) {
+            const analytics = getAnalytics();
+            const proposal = analytics.proposals.find(p => p.id === proposalId);
+            if (proposal) {
+                proposal.outcome = outcome;
+                localStorage.setItem(STORED_ANALYTICS, JSON.stringify(analytics));
+                updateAnalytics();
+            }
+        }
+
+        function updateAnalytics() {
+            const analytics = getAnalytics();
+            const total = analytics.proposals.length;
+
+            if (total === 0) {
+                document.getElementById('analyticsPanel').style.display = 'none';
+                return;
+            }
+
+            const outcomes = analytics.proposals.filter(p => p.outcome);
+            const viewed = outcomes.filter(p => ['viewed', 'replied', 'interview', 'hired'].includes(p.outcome)).length;
+            const replied = outcomes.filter(p => ['replied', 'interview', 'hired'].includes(p.outcome)).length;
+            const hired = outcomes.filter(p => p.outcome === 'hired').length;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statViewed').textContent = total > 0 ? `${Math.round(viewed / total * 100)}%` : '0%';
+            document.getElementById('statReplied').textContent = total > 0 ? `${Math.round(replied / total * 100)}%` : '0%';
+            document.getElementById('statHired').textContent = total > 0 ? `${Math.round(hired / total * 100)}%` : '0%';
+
+            document.getElementById('analyticsPanel').style.display = 'block';
+        }
+
+        // ============================================
+        // ERROR HANDLING
+        // ============================================
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
