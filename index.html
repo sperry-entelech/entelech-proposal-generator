@@ -833,7 +833,7 @@
                 <div id="outputContainer" class="output-container">
                     <div class="output-tabs">
                         <button class="output-tab active" data-tab="coverLetter" onclick="switchTab('coverLetter')">Cover Letter</button>
-                        <button class="output-tab" data-tab="fullProposal" onclick="switchTab('fullProposal')">Full Proposal</button>
+                        <button class="output-tab" data-tab="proposalDoc" onclick="switchTab('proposalDoc')">Proposal Doc</button>
                         <button class="output-tab" data-tab="loomScript" onclick="switchTab('loomScript')">Loom Script</button>
                     </div>
 
@@ -854,16 +854,20 @@
                         </div>
                     </div>
 
-                    <!-- Full Proposal Panel -->
-                    <div id="fullProposalPanel" class="output-panel">
+                    <!-- Proposal Doc Panel -->
+                    <div id="proposalDocPanel" class="output-panel">
                         <div class="output-header">
-                            <span class="output-title">Full Proposal</span>
-                            <span class="char-count" id="fullProposalCharCount">0 characters</span>
+                            <span class="output-title">Proposal Doc</span>
+                            <span class="char-count" id="proposalDocCharCount">0 characters</span>
                         </div>
-                        <div class="output-content" id="fullProposalOutput"></div>
+                        <div class="preview-box" style="background: var(--success-bg); border-color: var(--success-border);">
+                            <div class="preview-label" style="color: var(--success-text);">Google Docs Ready</div>
+                            <div style="font-size: 12px; color: var(--text-muted);">No markdown, no asterisks - clean text for attachment</div>
+                        </div>
+                        <div class="output-content" id="proposalDocOutput"></div>
                         <div class="btn-group">
-                            <button class="btn-secondary" onclick="copyToClipboard('fullProposalOutput')">Copy to Clipboard</button>
-                            <button class="btn-secondary" onclick="window.print()">Export PDF</button>
+                            <button class="btn-secondary" onclick="copyForGoogleDocs('proposalDocOutput')">Copy for Google Docs</button>
+                            <button class="btn-secondary" onclick="copyToClipboard('proposalDocOutput')">Copy Raw</button>
                         </div>
                     </div>
 
@@ -1045,7 +1049,7 @@ CHARACTER LIMITS:
         let selectedProofPoints = [];
         let currentOutputs = {
             coverLetter: '',
-            fullProposal: '',
+            proposalDoc: '',
             loomScript: ''
         };
 
@@ -1387,19 +1391,69 @@ CHARACTER LIMITS:
             };
 
             const outputInstructions = {
-                cover_letter: 'Generate ONLY a cover letter optimized for Upwork. Keep it under 2000 characters. First 120 characters are critical for the preview.',
-                full_proposal: 'Generate a full proposal with all sections. This is for follow-up after initial interest.',
-                loom_script: 'Generate ONLY a Loom video script (2-3 minutes when read aloud, ~300-400 words). Write it conversationally, with [PAUSE] markers and screen share instructions.',
+                cover_letter: `Generate ONLY a cover letter optimized for Upwork submission field.
+- 500-800 characters ideal, max 2000
+- First 120 characters are CRITICAL - this is what shows in preview
+- No fluff, no "I hope this finds you well"
+- End with low-friction CTA (thumbs up, quick reply)`,
+                full_proposal: `Generate a PROPOSAL DOC for Google Docs attachment. This is a one-pager they can review.
+
+CRITICAL: NO MARKDOWN FORMATTING. No asterisks, no bold markers, no headers with #. Just clean plain text with line breaks.
+
+Structure:
+1. THE PROBLEM (2-3 sentences showing you understand their situation + YOUR unique insight they haven't considered)
+2. WHAT I'D BUILD (phased approach with clear deliverables)
+   - Phase 1: Infrastructure (domains, DNS, warmup)
+   - Phase 2: Campaign Build (sequences, targeting)
+   - Phase 3: Optimization (iterate based on data)
+3. INVESTMENT OPTIONS
+   - Option A: Flat fee for build ($X)
+   - Option B: Performance-based (lower upfront + per meeting)
+4. GUARANTEE (specific risk reversal)
+5. NEXT STEP (low friction)
+
+Keep it scannable. Use line breaks between sections. NO ASTERISKS OR MARKDOWN.`,
+                loom_script: `Generate a LOOM VIDEO SCRIPT (2-3 minutes, ~300-400 words).
+
+CRITICAL STRUCTURE (per Nick Saraev's system):
+1. OPENING (first 15 seconds) - Opens on THEIR Upwork profile/website
+   [SCREEN: Their profile page]
+   "Hey [name], I'm looking at your job posting for..."
+
+2. ZOOM ACTION (within first 15 seconds) - Proves it's not templated
+   [ZOOM: Highlight specific detail from their post]
+   "I noticed you mentioned [specific thing]..."
+
+3. VALUE DEMO (30-60 seconds)
+   [SCREEN: Show relevant example/dashboard]
+   Demonstrate understanding of their problem
+   Show brief proof of capability
+
+4. CREDIBILITY DROP (15-20 seconds)
+   [SCREEN: Results screenshot or case study]
+   "Recently we built a system that..."
+   Quick result mention
+
+5. SOFT CLOSE (10-15 seconds)
+   [SCREEN: Back to their profile]
+   "If this resonates, just shoot me a thumbs up..."
+   Low-friction CTA
+
+Include [SCREEN: description] and [ZOOM: description] markers for screen actions.
+Include [PAUSE] markers for natural pauses.
+Write conversationally - this is spoken, not read.`,
                 all: `Generate all three formats, clearly labeled:
 
 [COVER LETTER]
-(Under 2000 characters, optimized for Upwork submission)
+500-800 characters for Upwork submission. First 120 chars optimized for preview.
 
-[FULL PROPOSAL]
-(Complete proposal with all sections)
+[PROPOSAL DOC]
+One-pager for Google Docs attachment. NO MARKDOWN - plain text only.
+Sections: Problem → What I'd Build → Investment Options → Guarantee → Next Step
 
 [LOOM SCRIPT]
-(2-3 minute video script with speaking notes)`
+2-3 minute video script with [SCREEN:] and [ZOOM:] markers.
+Opens on their profile, zooms within 15 seconds, includes value demo and soft close.`
             };
 
             return `UPWORK JOB POSTING:
@@ -1430,23 +1484,23 @@ Generate the proposal now. Be specific, be human, be compelling. No fluff.`;
 
             if (outputFormat === 'all') {
                 // Parse multiple sections
-                const coverLetterMatch = content.match(/\[COVER LETTER\]([\s\S]*?)(?=\[FULL PROPOSAL\]|$)/i);
-                const fullProposalMatch = content.match(/\[FULL PROPOSAL\]([\s\S]*?)(?=\[LOOM SCRIPT\]|$)/i);
+                const coverLetterMatch = content.match(/\[COVER LETTER\]([\s\S]*?)(?=\[PROPOSAL DOC\]|$)/i);
+                const proposalDocMatch = content.match(/\[PROPOSAL DOC\]([\s\S]*?)(?=\[LOOM SCRIPT\]|$)/i);
                 const loomScriptMatch = content.match(/\[LOOM SCRIPT\]([\s\S]*?)$/i);
 
                 currentOutputs.coverLetter = coverLetterMatch ? coverLetterMatch[1].trim() : '';
-                currentOutputs.fullProposal = fullProposalMatch ? fullProposalMatch[1].trim() : '';
+                currentOutputs.proposalDoc = proposalDocMatch ? stripMarkdown(proposalDocMatch[1].trim()) : '';
                 currentOutputs.loomScript = loomScriptMatch ? loomScriptMatch[1].trim() : '';
             } else {
                 // Single output
                 currentOutputs.coverLetter = outputFormat === 'cover_letter' ? content : '';
-                currentOutputs.fullProposal = outputFormat === 'full_proposal' ? content : '';
+                currentOutputs.proposalDoc = outputFormat === 'full_proposal' ? stripMarkdown(content) : '';
                 currentOutputs.loomScript = outputFormat === 'loom_script' ? content : '';
             }
 
             // Update UI
             document.getElementById('coverLetterOutput').textContent = currentOutputs.coverLetter;
-            document.getElementById('fullProposalOutput').textContent = currentOutputs.fullProposal;
+            document.getElementById('proposalDocOutput').textContent = currentOutputs.proposalDoc;
             document.getElementById('loomScriptOutput').textContent = currentOutputs.loomScript;
 
             updateCharCounts();
@@ -1456,7 +1510,7 @@ Generate the proposal now. Be specific, be human, be compelling. No fluff.`;
             if (outputFormat === 'cover_letter' || outputFormat === 'all') {
                 switchTab('coverLetter');
             } else if (outputFormat === 'full_proposal') {
-                switchTab('fullProposal');
+                switchTab('proposalDoc');
             } else if (outputFormat === 'loom_script') {
                 switchTab('loomScript');
             }
@@ -1464,9 +1518,33 @@ Generate the proposal now. Be specific, be human, be compelling. No fluff.`;
             outputContainer.classList.add('visible');
         }
 
+        // Strip markdown formatting for Google Docs
+        function stripMarkdown(text) {
+            return text
+                // Remove bold/italic markers
+                .replace(/\*\*([^*]+)\*\*/g, '$1')
+                .replace(/\*([^*]+)\*/g, '$1')
+                .replace(/__([^_]+)__/g, '$1')
+                .replace(/_([^_]+)_/g, '$1')
+                // Remove headers
+                .replace(/^#{1,6}\s+/gm, '')
+                // Remove bullet points (keep the text)
+                .replace(/^[\s]*[-*+]\s+/gm, '• ')
+                // Remove numbered list markers
+                .replace(/^[\s]*\d+\.\s+/gm, '')
+                // Remove code blocks
+                .replace(/```[\s\S]*?```/g, '')
+                .replace(/`([^`]+)`/g, '$1')
+                // Remove links but keep text
+                .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+                // Clean up extra whitespace
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+        }
+
         function updateCharCounts() {
             const coverLetterCount = currentOutputs.coverLetter.length;
-            const fullProposalCount = currentOutputs.fullProposal.length;
+            const proposalDocCount = currentOutputs.proposalDoc.length;
             const loomScriptWords = currentOutputs.loomScript.split(/\s+/).filter(w => w).length;
             const loomScriptMinutes = Math.round(loomScriptWords / 150 * 10) / 10; // ~150 words per minute
 
@@ -1479,7 +1557,7 @@ Generate the proposal now. Be specific, be human, be compelling. No fluff.`;
                 coverLetterEl.classList.add('warning');
             }
 
-            document.getElementById('fullProposalCharCount').textContent = `${fullProposalCount} characters`;
+            document.getElementById('proposalDocCharCount').textContent = `${proposalDocCount} characters`;
             document.getElementById('loomScriptCharCount').textContent = `~${loomScriptMinutes} min read time (${loomScriptWords} words)`;
         }
 
@@ -1498,6 +1576,15 @@ Generate the proposal now. Be specific, be human, be compelling. No fluff.`;
             });
             document.querySelectorAll('.output-panel').forEach(panel => {
                 panel.classList.toggle('active', panel.id === `${tabName}Panel`);
+            });
+        }
+
+        // Copy with additional markdown stripping for Google Docs
+        function copyForGoogleDocs(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            const cleanText = stripMarkdown(text);
+            navigator.clipboard.writeText(cleanText).then(() => {
+                showCopyFeedback('Copied for Google Docs (markdown stripped)!');
             });
         }
 
